@@ -41,11 +41,12 @@ public class EmployeeController {
 
 	@PutMapping("/employees/{id}/events/{event}")
 	@ApiOperation(value = "Update employee state", response = String.class)
-	public ResponseEntity<String> update(@PathVariable long id, @PathVariable String event) {
-		boolean isRelevant = employeeService.handleEvent(id, event);
-		if (!isRelevant) {
-			return new ResponseEntity<>("Event is not relevant", HttpStatus.UNPROCESSABLE_ENTITY);
+	public ResponseEntity<Employee> update(@PathVariable long id, @PathVariable String event) {
+		try{
+			Employee employee = employeeService.updateState(id, event);
+			return new ResponseEntity<>(employee, HttpStatus.OK);
+		} catch (IllegalArgumentException e) {
+			return new ResponseEntity<>(null, HttpStatus.UNPROCESSABLE_ENTITY);
 		}
-		return new ResponseEntity<>("State is updated", HttpStatus.OK);
 	}
 }

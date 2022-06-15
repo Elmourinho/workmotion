@@ -5,7 +5,6 @@ import com.elmar.workmotion.model.Events;
 import com.elmar.workmotion.model.States;
 import com.elmar.workmotion.repository.EmployeeRepository;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -37,15 +36,16 @@ public class EmployeeService {
 		return employeeRepository.findById(id);
 	}
 
-	public boolean handleEvent(long id, String event) {
+	public Employee updateState(long id, String event) {
 		Employee employee =
 				employeeRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.valueOf(id)));
 		StateMachine<States, Events> stateMachine = buildStateMachine(employee);
 		boolean isRelevant = stateMachine.sendEvent(Events.valueOf(event));
 		if (isRelevant) {
-			updateEmployeeStates(employee, stateMachine.getState().getIds());
+			employee.setStates(new ArrayList<>(stateMachine.getState().getIds()));
+			return employeeRepository.save(employee);
 		}
-		return isRelevant;
+		throw new IllegalArgumentException("Provided event is not relevant");
 	}
 
 	private StateMachine<States, Events> buildStateMachine(Employee employee) {
@@ -71,11 +71,5 @@ public class EmployeeService {
 				});
 		stateMachine.startReactively().subscribe();
 		return stateMachine;
-	}
-
-	private void updateEmployeeStates(Employee employee, Collection<States> states) {
-		employee.getStates().clear();
-		employee.setStates(new ArrayList<>(states));
-		employeeRepository.save(employee);
 	}
 }
