@@ -40,7 +40,7 @@ public class EmployeeController {
 	}
 
 	@PutMapping("/employees/{id}/events/{event}")
-	@ApiOperation(value = "Update employee state", response = String.class)
+	@ApiOperation(value = "Update employee state", response = Employee.class)
 	public ResponseEntity<Employee> update(@PathVariable long id, @PathVariable String event) {
 		try{
 			Employee employee = employeeService.updateState(id, event);
